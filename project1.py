@@ -26,8 +26,8 @@ train_y=train[:,-1]
 x_train,x_test,y_train,y_test=train_test_split(train_x,train_y,test_size=0.1,random_state=0)
 
 def singlevalview():
+	feature=['Spruce/Fir','Lodgepole Pine','Ponderosa Pine','Cottonwood/Willow','Aspen','Douglas-fir','Krummholz']
 	def featuretrans(a):
-		feature=['Spruce/Fir','Lodgepole Pine','Ponderosa Pine','Cottonwood/Willow','Aspen','Douglas-fir','Krummholz']
 		return feature[a-1]
 	train_df['Cover_Type']=train_df['Cover_Type'].apply(featuretrans)
 	plt.subplots(2,5,figsize=(18,10))
@@ -39,11 +39,11 @@ def singlevalview():
 		s1=s1.sort_index()
 		for j in range(7):
 			z=np.polyfit(list(s1.index),list(s1[featuretrans(j+1)]),11)
-			#plt.plot(list(s1.index),list(s1[featuretrans(j+1)]))
-			plt.plot(list(s1.index),np.polyval(z,list(s1.index)))
-	#sns.pairplot(train_df[[list(train_df.columns)[i],'Cover_Type']],hue='Cover_Type',height=3)
-	#sns.distplot(train_x[:,0])
-	#sns.jointplot(train_x[:,0],train_x[:,1],kind='hex')
+			#plt.plot(s1.index,s1[featuretrans(j+1)],label=feature[j])
+			plt.plot(list(s1.index),np.polyval(z,list(s1.index)),label=feature[j])
+		plt.xlabel(train_df.columns[i])
+		plt.legend()
+			
 	plt.show()
 
 def binvalview():
@@ -59,6 +59,23 @@ def binvalview():
 			plt.scatter(train_df[list(train_df.columns)[i]],train_df[list(train_df.columns)[j]],s=0.2,c=train_df['Cover_Type'])
 			a=a+1
 	plt.show()
+
+def dummyview():
+	plt.subplots(5,9,figsize=(18,11))
+	plt.subplots_adjust(hspace=0.5)
+	for i in range(44):
+		plt.subplot(5,9,i+1)
+		group=train_df.groupby(["Cover_Type",list(train_df.columns)[i+11]])
+		s1=group.size().unstack().fillna(0)
+		s1.index=[int(x) for x in s1.index]
+		s1=s1.sort_index()
+		if len(s1.columns)==1:
+			plt.bar(s1.index,[0]*7,tick_label=s1.index)
+		else:
+			plt.bar(s1.index,s1[1],tick_label=s1.index)
+		plt.xlabel(train_df.columns[i+11])
+		#print(train_df[train_df.columns[i+11]])
+	plt.show()
 	
 
 
@@ -68,11 +85,6 @@ y_predit=rfc.predict(x_test)
 print(metrics.accuracy_score(y_test,y_predit))
 
 
-#71
-svmodel=SVC()
-svmodel.fit(x_train,y_train)
-y_predit=svmodel.predict(x_test)
-print(metrics.accuracy_score(y_test,y_predit))
 
 
 
